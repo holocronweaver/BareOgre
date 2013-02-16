@@ -1,3 +1,4 @@
+
 #ifndef __BaseApplication_h_
 #define __BaseApplication_h_
 
@@ -42,6 +43,7 @@ class BareOgre : public Ogre::WindowEventListener,
   Ogre::String mPluginsCfg;
   Ogre::String mResourcesCfg;
   Ogre::Root* mRoot;
+  Ogre::LogManager* mLog;
   Ogre::RenderWindow* mWindow;
   Ogre::SceneManager* mSceneMgr;
   bool mShutdown;

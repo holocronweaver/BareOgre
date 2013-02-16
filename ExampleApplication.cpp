@@ -1,5 +1,14 @@
 #include "ExampleApplication.h"
 
+#include <OgreCamera.h>
+#include <OgreConfigFile.h>
+#include <OgreEntity.h>
+#include <OgreException.h>
+#include <OgreSceneManager.h>
+#include <OgreRenderWindow.h>
+#include <OgreViewport.h>
+#include <OgreWindowEventUtilities.h>
+
 ExampleApplication::ExampleApplication()
 {
 }
@@ -11,19 +20,41 @@ ExampleApplication::~ExampleApplication()
 //-------------------------------------------------------------------------------------
 void ExampleApplication::createScene()
 {
-  // Set the scene's ambient light
-  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+  // Create SceneManager.
+  mSceneMgr = mRoot->createSceneManager("DefaultSceneManager");
 
-  // Create an Entity
+  // Create a camera.
+  mCamera = mSceneMgr->createCamera("PlayerCam");
+  mCamera->setPosition(Ogre::Vector3(0,0,80));
+  mCamera->lookAt(Ogre::Vector3(0,0,-3));
+  mCamera->setNearClipDistance(5);
+  mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
+  mCamNode->attachObject(mCamera);
+
+  // Create one viewport, entire window.
+  Ogre::Viewport* vp = mWindow->addViewport(mCamera);
+  vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+
+  // Set camera aspect ratio to match viewport.
+  mCamera->setAspectRatio(
+    Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
+
+  // Add lighting.
+  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
+
+  Ogre::Light* l = mSceneMgr->createLight("MainLight");
+  l->setPosition(20,80,50);
+
+  // Add meshes.
   Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-
-  // Create a SceneNode and attach the Entity to it
-  Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("HeadNode");
+  Ogre::SceneNode* headNode =
+    mSceneMgr->getRootSceneNode()->createChildSceneNode();
   headNode->attachObject(ogreHead);
 
-  // Create a Light and set its position
-  Ogre::Light* light = mSceneMgr->createLight("MainLight");
-  light->setPosition(20.0f, 80.0f, 50.0f);
+  // Set player control parameters.
+  mRotate = 0.13;
+  mMove = 250;
+  mDirection = Ogre::Vector3::ZERO;
 }
 
 //==============================================================================

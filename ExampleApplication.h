@@ -1,9 +1,9 @@
 #ifndef __ExampleApplication_h_
 #define __ExampleApplication_h_
 
-#include "BaseApplication.h"
+#include "BareOgre.h"
 
-class ExampleApplication : public BaseApplication
+class ExampleApplication : public BareOgre
 {
  public:
   ExampleApplication(void);

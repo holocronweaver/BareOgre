@@ -1,0 +1,4 @@
+List of things that need to be done to complete BareOgre:
+
+* tweak for C++11
+* 

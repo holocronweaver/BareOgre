@@ -50,7 +50,7 @@ bool BareOgre::go(void)
   }
 
   // Create RenderWindow.
-  mWindow = mRoot->initialise(true, "OgreVox Render Window");
+  mWindow = mRoot->initialise(true, "BareOgre Render Window");
 
   // Set default mipmap level.
   Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -201,4 +201,123 @@ void BareOgre::windowClosed(Ogre::RenderWindow* rw)
       mInputManager = 0;
     }
   }
+}
+
+//==============================================================================
+// User Input (OIS)
+//==============================================================================
+bool BareOgre::keyPressed( const OIS::KeyEvent& evt ) {
+  mLog->logMessage("** Key Pressed **");
+
+  switch (evt.key) {
+    case OIS::KC_ESCAPE:
+      mShutdown = true;
+      break;
+
+    case OIS::KC_SYSRQ:
+      mWindow->writeContentsToTimestampedFile("screenshot_", ".jpg");
+      break;
+
+    case OIS::KC_F5:
+      Ogre::TextureManager::getSingleton().reloadAll();
+      break;
+
+    case OIS::KC_UP:
+    case OIS::KC_W:
+      mDirection.z -= mMove;
+      break;
+
+    case OIS::KC_DOWN:
+    case OIS::KC_S:
+      mDirection.z += mMove;
+      break;
+
+    case OIS::KC_LEFT:
+    case OIS::KC_A:
+      mDirection.x -= mMove;
+      break;
+
+    case OIS::KC_RIGHT:
+    case OIS::KC_D:
+      mDirection.x += mMove;
+      break;
+
+    case OIS::KC_PGDOWN:
+    case OIS::KC_E:
+      mDirection.y -= mMove;
+      break;
+
+    case OIS::KC_PGUP:
+    case OIS::KC_Q:
+      mDirection.y += mMove;
+      break;
+    default:
+      break;
+  }
+  return true;
+}
+bool BareOgre::keyReleased( const OIS::KeyEvent& evt ){
+  mLog->logMessage("** Key Released  **");
+
+  switch (evt.key) {
+    case OIS::KC_UP:
+    case OIS::KC_W:
+      mDirection.z += mMove;
+      break;
+
+    case OIS::KC_DOWN:
+    case OIS::KC_S:
+      mDirection.z -= mMove;
+      break;
+
+    case OIS::KC_LEFT:
+    case OIS::KC_A:
+      mDirection.x += mMove;
+      break;
+
+    case OIS::KC_RIGHT:
+    case OIS::KC_D:
+      mDirection.x -= mMove;
+      break;
+
+    case OIS::KC_PGDOWN:
+    case OIS::KC_E:
+      mDirection.y += mMove;
+      break;
+
+    case OIS::KC_PGUP:
+    case OIS::KC_Q:
+      mDirection.y -= mMove;
+      break;
+
+    default:
+      break;
+  }
+  return true;
+
+}
+bool BareOgre::mouseMoved( const OIS::MouseEvent& evt )
+{
+  //if (evt.state.buttonDown(OIS::MB_Right)) {
+    mCamNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel),
+                  Ogre::Node::TS_WORLD);
+    mCamNode->pitch(Ogre::Degree(-mRotate * evt.state.Y.rel),
+                    Ogre::Node::TS_LOCAL);
+  //}
+  return true;
+}
+bool BareOgre::mousePressed( const OIS::MouseEvent& evt, OIS::MouseButtonID id )
+{
+  switch (id) {
+    case OIS::MB_Left:
+      break;
+    default:
+      break;
+  }
+  return true;
+}
+bool BareOgre::mouseReleased( const OIS::MouseEvent& evt,
+                             OIS::MouseButtonID id )
+{
+  return true;
 }

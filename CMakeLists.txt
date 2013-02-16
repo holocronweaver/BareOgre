@@ -16,7 +16,7 @@
 #*/
 cmake_minimum_required(VERSION 2.8)
 
-set(APPLICATION_NAME "BasicTutorial08")
+set(APPLICATION_NAME "ExampleApplication")
 
 project(${APPLICATION_NAME})
 
@@ -120,12 +120,12 @@ if(Boost_FOUND)
 endif()
 
 set(HDRS
-  ./BaseApplication.h
+  ./BareOgre.h
   ${APPLICATION_NAME}.h
 )
 
 set(SRCS
-  ./BaseApplication.cpp
+  ./BareOgre.cpp
   ${APPLICATION_NAME}.cpp
 )
 

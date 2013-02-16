@@ -1,4 +1,4 @@
-#include "BasicTutorial06.h"
+#include "BareOgre.h"
 
 #include <OgreCamera.h>
 #include <OgreConfigFile.h>
@@ -9,24 +9,28 @@
 #include <OgreViewport.h>
 #include <OgreWindowEventUtilities.h>
 
-BasicTutorial06::BasicTutorial06(void) 
+BareOgre::BareOgre(void) 
   : mRoot(0),
     mResourcesCfg(Ogre::StringUtil::BLANK),
-    mPluginsCfg(Ogre::StringUtil::BLANK)
+    mPluginsCfg(Ogre::StringUtil::BLANK),
+    mShutdown(false)
 {
 }
 
-BasicTutorial06::~BasicTutorial06(void) 
+BareOgre::~BareOgre(void) 
 {
-  //Remove ourself as a Window listener
+  // Remove ourself as a window listener.
   Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
   windowClosed(mWindow);
 
   delete mRoot;
 }
 
-bool BasicTutorial06::go(void) 
+bool BareOgre::go(void) 
 {
+  mLog = new Ogre::LogManager;
+  mLog->createLog("Ogre.log");
+
 #ifdef _DEBUG
   mResourcesCfg = "resources_d.cfg";
   mPluginsCfg = "plugins_d.cfg";
@@ -34,12 +38,113 @@ bool BasicTutorial06::go(void)
   mResourcesCfg = "resources.cfg";
   mPluginsCfg = "plugins.cfg";
 #endif
+
   mRoot = new Ogre::Root(mPluginsCfg);
-  
+
   // Load resource paths from resources config file.
+  setupResources();
+
+  // Configure dialog.
+  if (!( mRoot->restoreConfig() || mRoot->showConfigDialog() )) {
+    return false;
+  }
+
+  // Create RenderWindow.
+  mWindow = mRoot->initialise(true, "OgreVox Render Window");
+
+  // Set default mipmap level.
+  Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
+  // Initialize all resource groups.
+  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+
+  // Create scene.
+  createScene();
+
+  // Initialize input. (OIS)
+  initInput();
+
+  // Set initial mouse clipping size.
+  windowResized(mWindow);
+
+  // Register as a Window listener.
+  Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+
+  // Render loop.
+  mRoot->addFrameListener(this);
+  mRoot->startRendering();
+
+  return true;
+}
+
+void BareOgre::createScene()
+{
+  // Create SceneManager.
+  mSceneMgr = mRoot->createSceneManager("DefaultSceneManager");
+
+  // Create a camera.
+  mCamera = mSceneMgr->createCamera("PlayerCam");
+  mCamera->setPosition(Ogre::Vector3(0,0,80));
+  mCamera->lookAt(Ogre::Vector3(0,0,-3));
+  mCamera->setNearClipDistance(5);
+  mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
+  mCamNode->attachObject(mCamera);
+
+  // Create one viewport, entire window.
+  Ogre::Viewport* vp = mWindow->addViewport(mCamera);
+  vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+
+  // Set camera aspect ratio to match viewport.
+  mCamera->setAspectRatio(
+    Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
+
+  // Add lighting.
+  //mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
+  mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0,1.0,1.0));
+
+
+  Ogre::Light* l = mSceneMgr->createLight("MainLight");
+  l->setPosition(20,80,50);
+
+  // Add meshes.
+  Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
+  Ogre::SceneNode* headNode =
+    mSceneMgr->getRootSceneNode()->createChildSceneNode();
+  headNode->attachObject(ogreHead);
+
+  // Set player control parameters.
+  mRotate = 0.13;
+  mMove = 250;
+  mDirection = Ogre::Vector3::ZERO;
+}
+
+void BareOgre::initInput() 
+{
+  mLog->logMessage("*** Initializing OIS ***");
+  OIS::ParamList pl;
+  size_t windowHnd = 0;
+  std::ostringstream windowHndStr;
+
+  mWindow->getCustomAttribute("WINDOW", &windowHnd);
+  windowHndStr << windowHnd;
+  pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+
+  mInputManager = OIS::InputManager::createInputSystem( pl );
+  //TODO switch to buffered input
+  mKeyboard = static_cast<OIS::Keyboard*>(
+    mInputManager->createInputObject( OIS::OISKeyboard, true ));
+  mMouse = static_cast<OIS::Mouse*>(
+    mInputManager->createInputObject( OIS::OISMouse, true ));
+
+  mKeyboard->setEventCallback(this);
+  mMouse->setEventCallback(this);
+}
+
+void BareOgre::setupResources() 
+{
   Ogre::ConfigFile cf;
   cf.load(mResourcesCfg);
 
+  //TODO convert to C++11
   Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
   Ogre::String secName, typeName, archName;
   while (seci.hasMoreElements()) {
@@ -50,103 +155,29 @@ bool BasicTutorial06::go(void)
       typeName = i->first;
       archName = i->second;
       Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-          archName, typeName, secName
+        archName, typeName, secName
       );
     }
   }
-
-  // Configure dialog.
-  if (!( mRoot->restoreConfig() || mRoot->showConfigDialog() )) {
-    return false;
-  }
-
-  // Create RenderWindow.
-  mWindow = mRoot->initialise(true, "BasicTutorial6 Render Window");
-
-  // Set default mipmap level.
-  Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-  // Initialize all resource groups.
-  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
-  // Create SceneManager.
-  mSceneMgr = mRoot->createSceneManager("DefaultSceneManager");
-
-  // Create a camera.
-  mCamera = mSceneMgr->createCamera("PlayerCam");
-  mCamera->setPosition(Ogre::Vector3(0,0,80));
-  mCamera->lookAt(Ogre::Vector3(0,0,-300));
-  mCamera->setNearClipDistance(5);
-
-  // Create one viewport, entire window.
-  Ogre::Viewport* vp = mWindow->addViewport(mCamera);
-  vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
-
-  // Set camera aspect ratio to match viewport.
-  mCamera->setAspectRatio(
-      Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
-
-  // Create a scene.
-  //TODO move to createScene function
-  Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-  Ogre::SceneNode* headNode = 
-    mSceneMgr->getRootSceneNode()->createChildSceneNode();
-  headNode->attachObject(ogreHead);
-  
-  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
-
-  Ogre::Light* l = mSceneMgr->createLight("MainLight");
-  l->setPosition(20,80,50);
-
-  // Initialize OIS for user input.
-  Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
-  OIS::ParamList pl;
-  size_t windowHnd = 0;
-  std::ostringstream windowHndStr;
- 
-  mWindow->getCustomAttribute("WINDOW", &windowHnd);
-  windowHndStr << windowHnd;
-  pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
- 
-  mInputManager = OIS::InputManager::createInputSystem( pl );
-  //TODO switch to buffered input
-  mKeyboard = static_cast<OIS::Keyboard*>(
-               mInputManager->createInputObject( OIS::OISKeyboard, false ));
-  mMouse = static_cast<OIS::Mouse*>(
-               mInputManager->createInputObject( OIS::OISMouse, false ));
-
-  // Set initial mouse clipping size.
-  windowResized(mWindow);
- 
-  // Register as a Window listener.
-  Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
-
-  // Render loop.
-  mRoot->addFrameListener(this);
-
-  mRoot->startRendering();
-
-  return true;
 }
 
-bool BasicTutorial06::frameRenderingQueued(const Ogre::FrameEvent& evt)
+bool BareOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-  if (mWindow->isClosed()) {
-    return false;
-  }
+  if (mWindow->isClosed()) return false;
+  if (mShutdown) return false;
  
   // Need to capture/update each device.
   mKeyboard->capture();
   mMouse->capture();
  
-  if (mKeyboard->isKeyDown(OIS::KC_ESCAPE)) {
-    return false;
-  }
+  mCamNode->translate(mDirection * evt.timeSinceLastFrame,
+                      Ogre::Node::TS_LOCAL);
  
   return true;
 }
 
 // Adjust mouse clipping area.
-void BasicTutorial06::windowResized(Ogre::RenderWindow* rw)
+void BareOgre::windowResized(Ogre::RenderWindow* rw)
 {
   unsigned int width, height, depth;
   int left, top;
@@ -158,7 +189,7 @@ void BasicTutorial06::windowResized(Ogre::RenderWindow* rw)
 }
  
 // Unattach OIS before window shutdown (very important under Linux).
-void BasicTutorial06::windowClosed(Ogre::RenderWindow* rw)
+void BareOgre::windowClosed(Ogre::RenderWindow* rw)
 {
   // Only close for window that created OIS (the main window in these demos).
   if (rw == mWindow) {
@@ -171,44 +202,3 @@ void BasicTutorial06::windowClosed(Ogre::RenderWindow* rw)
     }
   }
 }
-
-
-//==============================================================================
-// Cross-platform boilerplate main()
-//==============================================================================
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#define WIN32_LEAN_AND_MEAN
-#include "windows.h"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
-#else
-int main(int argc, char *argv[]) 
-#endif
-{
-  BasicTutorial06 app;
-
-  try {
-    app.go();
-  } catch( Ogre::Exception& e ) {
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    MessageBox( NULL, e.getFullDescription().c_str(), 
-                "An exception has occured!", 
-                MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#else
-    std::cerr << "An exception has occured: " <<
-      e.getFullDescription().c_str() << std::endl;
-#endif
-  }
-
-  return 0;
-}
-
-#ifdef __cplusplus
-}
-#endif

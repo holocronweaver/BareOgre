@@ -25,5 +25,6 @@ The code is tweaked and enhanced from the Ogre Tutorial Framework available
 on the Ogre Wiki as a Public Domain work.
 
 This code is released under the LGPLv3 license (see license/LICENSE.txt).
+
 ![LGPLv3 logo](https://raw.github.com/holocronweaver/BareOgre/master/license/LGPLv3.png)
 

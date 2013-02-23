@@ -1,6 +1,5 @@
-
-#ifndef __BaseApplication_h_
-#define __BaseApplication_h_
+#ifndef __BareOgre_h_
+#define __BareOgre_h_
 
 #include <OgreRoot.h>
 #include <OgreWindowEventUtilities.h>

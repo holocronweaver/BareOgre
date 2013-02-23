@@ -6,11 +6,11 @@
 class ExampleApplication : public BareOgre
 {
  public:
-  ExampleApplication(void);
-  virtual ~ExampleApplication(void);
+  ExampleApplication();
+  virtual ~ExampleApplication();
 
  protected:
-  virtual void createScene(void);
+  virtual void createScene();
 };
 
 #endif // #ifndef __ExampleApplication_h_

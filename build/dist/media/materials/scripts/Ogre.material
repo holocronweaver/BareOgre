@@ -37,13 +37,13 @@ material Ogre/Skin
   {
    ambient 0.3 0.8 0.3
 
-                        vertex_program_ref SimpleLighting/PassThroughVP
-                        {
-                        }
+                     vertex_program_ref SimpleLighting/PassThroughVP
+                     {
+                     }
 
-                        fragment_program_ref SimpleLighting/PointLightDiffuseFP
-                        {
-                        }
+                     fragment_program_ref SimpleLighting/PointLightDiffuseFP
+                     {
+                     }
 
    texture_unit
    {

@@ -1,0 +1,108 @@
+// Simple Phong lighting with and without surface textures.
+
+vertex_program SimpleLighting/Common/GLSL glsl
+{
+    source LightingCommon.glsl
+    syntax glsl150
+}
+
+vertex_program SimpleLighting/PassThroughVP/GLSL glsl
+{
+    source PassThroughVS.glsl
+    syntax glsl150
+}
+
+fragment_program SimpleLighting/PointLightDiffuseFP/GLSL glsl
+{
+    source PointLightDiffuseFS.glsl
+    syntax glsl150
+    attach SimpleLighting/Common/GLSL
+}
+
+fragment_program SimpleLighting/PointLightDiffuseNoTextureFP/GLSL glsl
+{
+    source PointLightDiffuseNoTextureFS.glsl
+    syntax glsl150
+}
+
+fragment_program SimpleLighting/WhiteFP glsl
+{
+   source WhiteFS.glsl
+   syntax glsl150
+}
+
+fragment_program SimpleLighting/EnvMapSphereFP/GLSL glsl
+{
+    source EnvMapSphereFS.glsl
+    syntax glsl150
+    attach SimpleLighting/Common/GLSL
+}
+
+vertex_program SimpleLighting/Common unified
+{
+    delegate SimpleLighting/Common/GLSL
+    // delegate SimpleLighting/Common/HLSL
+
+    // default_params
+    // {
+    //     param_named_auto worldViewProj worldviewproj_matrix
+    // }
+}
+
+vertex_program SimpleLighting/PassThroughVP unified
+{
+    delegate SimpleLighting/PassThroughVP/GLSL
+    // delegate SimpleLighting/PassThroughVP/HLSL
+
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+    }
+}
+
+fragment_program SimpleLighting/PointLightDiffuseFP unified
+{
+    delegate SimpleLighting/PointLightDiffuseFP/GLSL
+    // delegate SimpleLighting/PointLightDiffuseFP/HLSL
+    
+    default_params
+    {
+        param_named texMap int 0
+        param_named_auto worldView worldview_matrix
+        param_named_auto worldViewIT inverse_transpose_worldview_matrix    
+        param_named_auto sceneColour derived_scene_colour
+        param_named_auto diffuseColour derived_light_diffuse_colour 0
+        param_named_auto lightPosV light_position_object_space 0
+        param_named_auto lightAttenuationCoeff light_attenuation 0
+    }
+}
+
+fragment_program SimpleLighting/PointLightDiffuseNoTextureFP unified
+{
+    delegate SimpleLighting/PointLightDiffuseNoTextureFP/GLSL
+    // delegate SimpleLighting/PointLightDiffuseNoTextureFP/HLSL
+    
+    default_params
+    {
+        param_named_auto sceneColour derived_scene_colour
+        param_named_auto diffuseColour derived_light_diffuse_colour 0
+        param_named_auto surfaceToLightVector light_position_object_space 0
+    }
+}
+
+fragment_program SimpleLighting/EnvMapSphereFP unified
+{
+    delegate SimpleLighting/EnvMapSphereFP/GLSL
+    // delegate SimpleLighting/EnvMapSphereFP/HLSL
+
+    default_params
+    {
+        param_named sphereMap int 0
+        param_named_auto worldview worldview_matrix
+        param_named_auto worldviewIT inverse_transpose_worldview_matrix
+        // param_named_auto textureTransform texture_matrix 0
+        param_named_auto sceneColour derived_scene_colour
+        param_named_auto diffuseColour derived_light_diffuse_colour 0
+        param_named_auto surfaceToLightVector light_position_object_space 0
+    }
+}

@@ -4,25 +4,25 @@ set(APPLICATION_NAME "ExampleApplication")
 
 project(${APPLICATION_NAME})
 
-if(WIN32)
+if (WIN32)
   #set(OGRE_STATIC TRUE)
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x")
+  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
   set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;${CMAKE_MODULE_PATH}")
   set(OGRE_SAMPLES_INCLUDEPATH "$ENV{OGRE_HOME}/Samples/include")
-endif(WIN32)
+endif (WIN32)
 
-if(UNIX)
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x")
-  if(EXISTS "/usr/local/lib/OGRE/cmake")
+if (UNIX)
+  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
+  if (EXISTS "/usr/local/lib/OGRE/cmake")
     set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
     set(OGRE_SAMPLES_INCLUDEPATH "/usr/local/share/OGRE/samples/Common/include/")
-  elseif(EXISTS "/usr/lib/OGRE/cmake")
+  elseif (EXISTS "/usr/lib/OGRE/cmake")
     set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
     set(OGRE_SAMPLES_INCLUDEPATH "/usr/share/OGRE/samples/Common/include/")
   else ()
     message(SEND_ERROR "Failed to find module path.")
-  endif(EXISTS "/usr/local/lib/OGRE/cmake")
-endif(UNIX)
+  endif ()
+endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
   # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
@@ -40,7 +40,7 @@ find_package(OGRE REQUIRED)
 # Add OgreTerrain.{so,dll,etc.} to our linked libraries
 #   These variables are defined in FindOGRE.cmake, mine is
 #   found at /usr/local/lib/OGRE/cmake/
-# if(OGRE_Terrain_FOUND)
+# if (OGRE_Terrain_FOUND)
 # # pretty sure the following include is unneeded
 #   # include_directories(${OGRE_Terrain_INCLUDE_DIRS})
 # # append OgreTerrain to the end of the OGRE_LIBRARIES variable
@@ -48,27 +48,33 @@ find_package(OGRE REQUIRED)
 #   message(STATUS "Found OGRE_Terrain: ${OGRE_Terrain_LIBRARIES}")
 # else(OGRE_Terrain_FOUND)
 #   message(SEND_ERROR "OgreTerrain Library not found.")
-# endif(OGRE_Terrain_FOUND)
+# endif (OGRE_Terrain_FOUND)
 
 
-find_package(OIS REQUIRED)
+# find_package(OIS REQUIRED)
 
-if(NOT OIS_FOUND)
-	message(SEND_ERROR "Failed to find OIS.")
-endif()
+# if (NOT OIS_FOUND)
+# 	message(SEND_ERROR "Failed to find OIS.")
+# endif ()
+
+find_package(SDL2 REQUIRED)
+
+if (NOT SDL2_FOUND)
+	message(SEND_ERROR "Failed to find SDL2.")
+endif ()
 
 
 # find_package(CEGUI REQUIRED)
 
-# if(NOT CEGUI_FOUND)
+# if (NOT CEGUI_FOUND)
 #   message(SEND_ERROR "Failed to find CEGUI.")
-# endif()
+# endif ()
 
 # find_package(CEGUIOGRE REQUIRED)
 
-# if(NOT CEGUIOGRE_FOUND)
+# if (NOT CEGUIOGRE_FOUND)
 #   message(SEND_ERROR "Failed to find CEGUIOGRE.")
-# endif()
+# endif ()
 
 
 # Find Boost
@@ -81,7 +87,7 @@ else ()
 endif ()
 if (APPLE AND OGRE_BUILD_PLATFORM_APPLE_IOS)
     set(Boost_USE_MULTITHREADED OFF)
-endif()
+endif ()
 set(Boost_ADDITIONAL_VERSIONS "1.53" "1.53.0" "1.52" "1.52.0" "1.51" "1.51.0" 
   "1.50" "1.50.0" "1.49" "1.49.0" "1.48" "1.48.0" "1.47" "1.47.0" "1.46" 
   "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" 
@@ -91,25 +97,25 @@ set(OGRE_BOOST_COMPONENTS thread date_time)
 find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
 if (NOT Boost_FOUND)
 	# Try again with the other type of libs
-	if(Boost_USE_STATIC_LIBS)
+	if (Boost_USE_STATIC_LIBS)
 		set(Boost_USE_STATIC_LIBS OFF)
 	else()
 		set(Boost_USE_STATIC_LIBS ON)
-	endif()
+	endif ()
 	find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
-endif()
+endif ()
 
-if(Boost_FOUND AND Boost_VERSION GREATER 104900)
+if (Boost_FOUND AND Boost_VERSION GREATER 104900)
         set(OGRE_BOOST_COMPONENTS thread date_time system chrono)
         find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
-endif()
+endif ()
 
-if(Boost_FOUND)
+if (Boost_FOUND)
 	# Set up referencing of Boost
 	include_directories(${Boost_INCLUDE_DIR})
 	add_definitions(-DBOOST_ALL_NO_LIB)
 	set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
-endif()
+endif ()
 
 set(HDRS
   ./BareOgre.h
@@ -124,7 +130,9 @@ set(SRCS
 include_directories( 
   ${OGRE_INCLUDE_DIRS}
   ${OGRE_SAMPLES_INCLUDEPATH}
-  ${OIS_INCLUDE_DIRS}
+  ${OGRE_Overlay_INCLUDE_DIR}
+  # ${OIS_INCLUDE_DIRS}
+  ${SDL2_INCLUDE_DIRS}
   #${CEGUI_INCLUDE_DIRS}
   #${CEGUIOGRE_INCLUDE_DIRS}
 )
@@ -132,10 +140,13 @@ include_directories(
 add_executable(${APPLICATION_NAME} WIN32 ${HDRS} ${SRCS})
 
 set_target_properties(${APPLICATION_NAME} PROPERTIES DEBUG_POSTFIX _d)
+
 target_link_libraries(
   ${APPLICATION_NAME} 
-  ${OGRE_LIBRARIES} 
-  ${OIS_LIBRARIES} 
+  ${OGRE_LIBRARIES}
+  ${OGRE_Overlay_LIBRARIES}
+  # ${OIS_LIBRARIES}
+  ${SDL2_LIBRARIES}
   #${CEGUI_LIBRARIES}
   #${CEGUIOGRE_LIBRARIES}
 )
@@ -143,25 +154,19 @@ target_link_libraries(
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
 
-if ((${OGRE_VERSION} VERSION_EQUAL "1.9.0") 
-    OR (${OGRE_VERSION} VERSION_GREATER "1.9.0"))
-	include_directories(${OGRE_Overlay_INCLUDE_DIR})
-	target_link_libraries(${APPLICATION_NAME} ${OGRE_Overlay_LIBRARIES})
-endif()
-
 # post-build copy for win32
-if(WIN32 AND NOT MINGW)
+if (WIN32 AND NOT MINGW)
 	add_custom_command( TARGET ${APPLICATION_NAME} PRE_BUILD
 		COMMAND if not exist .\\dist\\bin mkdir .\\dist\\bin )
 	add_custom_command( TARGET ${APPLICATION_NAME} POST_BUILD
 		COMMAND copy \"$(TargetPath)\" .\\dist\\bin )
-endif(WIN32 AND NOT MINGW)
+endif (WIN32 AND NOT MINGW)
 
-if(MINGW OR UNIX)
+if (MINGW OR UNIX)
 	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/dist/bin)
-endif(MINGW OR UNIX)
+endif (MINGW OR UNIX)
 
-if(WIN32)
+if (WIN32)
 	install(TARGETS ${APPLICATION_NAME}
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
@@ -181,9 +186,9 @@ if(WIN32)
 		CONFIGURATIONS Debug
 	)
 
-	if(EXISTS ${OGRE_Overlay_BINARY_REL})
+	if (EXISTS ${OGRE_Overlay_BINARY_REL})
 		install(FILES ${OGRE_Overlay_BINARY_REL} DESTINATION bin CONFIGURATIONS Release)
-	endif()
+	endif ()
 	install(FILES ${OGRE_BINARY_REL}
 		${OGRE_Plugin_OctreeSceneManager_REL}
 		${OGRE_PLUGIN_DIR_REL}/cg.dll
@@ -194,9 +199,9 @@ if(WIN32)
 		DESTINATION bin
 		CONFIGURATIONS Release)
 
-	if(EXISTS ${OGRE_Overlay_BINARY_DBG})
+	if (EXISTS ${OGRE_Overlay_BINARY_DBG})
 		install(FILES ${OGRE_Overlay_BINARY_DBG} DESTINATION bin CONFIGURATIONS Debug)
-	endif()
+	endif ()
 	install(FILES ${OGRE_BINARY_DBG}
 		${OGRE_Plugin_OctreeSceneManager_DBG}
 		${OGRE_PLUGIN_DIR_DBG}/cg.dll
@@ -206,9 +211,9 @@ if(WIN32)
 		${OGRE_Paging_BINARY_DBG}
 		DESTINATION bin
 		CONFIGURATIONS Debug)
-endif(WIN32)
+endif (WIN32)
 
-if(UNIX)
+if (UNIX)
  
 	install(TARGETS ${APPLICATION_NAME}
 		RUNTIME DESTINATION bin
@@ -225,5 +230,5 @@ if(UNIX)
 		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
-endif(UNIX)
+endif (UNIX)
  

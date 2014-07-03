@@ -1,13 +1,15 @@
 #include "ExampleApplication.h"
 
 #include <OgreCamera.h>
-#include <OgreConfigFile.h>
+#include <OgreOptionsFile.h>
 #include <OgreEntity.h>
 #include <OgreException.h>
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 #include <OgreViewport.h>
 #include <OgreWindowEventUtilities.h>
+
+#include <OgreSceneNode.h>
 
 ExampleApplication::ExampleApplication()
 {
@@ -33,7 +35,7 @@ void ExampleApplication::createScene()
 
   // Create one viewport, entire window.
   Ogre::Viewport* vp = mWindow->addViewport(mCamera);
-  vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+  // vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
 
   // Set camera aspect ratio to match viewport.
   mCamera->setAspectRatio(
@@ -47,6 +49,7 @@ void ExampleApplication::createScene()
 
   // Add meshes.
   Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
+  // ogreHead->setMaterialName("BaseWhite");
   Ogre::SceneNode* headNode =
     mSceneMgr->getRootSceneNode()->createChildSceneNode();
   headNode->attachObject(ogreHead);
@@ -79,7 +82,7 @@ extern "C" {
 
     try {
       app.go();
-    } catch( Ogre::Exception& e ) {
+    } catch (Ogre::Exception& e) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
       MessageBox( NULL, e.getFullDescription().c_str(), 
                   "An exception has occured!", 

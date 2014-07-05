@@ -27,11 +27,17 @@ void ExampleApplication::createScene()
 
   // Create a camera.
   mCamera = mSceneMgr->createCamera("PlayerCam");
-  mCamera->setPosition(Ogre::Vector3(0,0,80));
-  mCamera->lookAt(Ogre::Vector3(0,0,-3));
+  mCamera->setPosition(Ogre::Vector3(0, 0, 80));
+  mCamera->lookAt(Ogre::Vector3(0, 0, -3));
   mCamera->setNearClipDistance(5);
   mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
   mCamNode->attachObject(mCamera);
+
+  // Set control control parameters.
+  mRotationSpeed = 0.13;
+  mMaxSpeed = 1000;
+  mSlowMaxSpeed = mMaxSpeed / 15;
+  mAccelerationRate = 100;
 
   // Create one viewport, entire window.
   Ogre::Viewport* vp = mWindow->addViewport(mCamera);
@@ -42,22 +48,16 @@ void ExampleApplication::createScene()
     Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
 
   // Add lighting.
-  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
+  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
 
   Ogre::Light* l = mSceneMgr->createLight("MainLight");
-  l->setPosition(20,80,50);
+  l->setPosition(20, 80, 50);
 
   // Add meshes.
   Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-  // ogreHead->setMaterialName("BaseWhite");
   Ogre::SceneNode* headNode =
     mSceneMgr->getRootSceneNode()->createChildSceneNode();
-  headNode->attachObject(ogreHead);
-
-  // Set player control parameters.
-  mRotate = 0.13;
-  mMove = 250;
-  mDirection = Ogre::Vector3::ZERO;
+  headNode->attachObject(ogreHead);  
 }
 
 //==============================================================================

@@ -15,11 +15,24 @@
 #include "OgreTextureManager.h"
 
 BareOgre::BareOgre()
-    : mRoot(0)
-    , mPluginsCfg("")
+    : mSlowMove(false)
+    , mMovingForward(false)
+    , mMovingBack(false)
+    , mMovingRight(false)
+    , mMovingLeft(false)
+    , mMovingUp(false)
+    , mMovingDown(false)
+    , mPluginsCfg("")    
     , mResourcesCfg("")
+    , mRoot(0)      
     , mShutdown(false)
+    , mVelocityDirection(Ogre::Vector3::ZERO)
 {
+    // Default camera control parameters.
+    mRotationSpeed = 0.13;
+    mMaxSpeed = 1000;
+    mSlowMaxSpeed = mMaxSpeed / 15;
+    mAccelerationRate = 100;
 }
 
 
@@ -129,38 +142,31 @@ void BareOgre::createScene()
 
     // Create a camera.
     mCamera = mSceneMgr->createCamera("PlayerCam");
-    mCamera->setPosition(Ogre::Vector3(0,0,80));
-    mCamera->lookAt(Ogre::Vector3(0,0,-3));
+    mCamera->setPosition(Ogre::Vector3(0, 0, 80));
+    mCamera->lookAt(Ogre::Vector3(0, 0, -3));
     mCamera->setNearClipDistance(5);
     mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
     mCamNode->attachObject(mCamera);
 
     // Create one viewport, entire window.
     Ogre::Viewport* vp = mWindow->addViewport(mCamera);
-    vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+    vp->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
 
     // Set camera aspect ratio to match viewport.
     mCamera->setAspectRatio(
-                            Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
+        Ogre::Real(vp->getActualWidth() / Ogre::Real(vp->getActualHeight())));
 
     // Add lighting.
-    //mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0,1.0,1.0));
-
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
 
     Ogre::Light* l = mSceneMgr->createLight("MainLight");
-    l->setPosition(20,80,50);
+    l->setPosition(20, 80, 50);
 
     // Add meshes.
     Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
     Ogre::SceneNode* headNode =
         mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    headNode->attachObject(ogreHead);
-
-    // Set player control parameters.
-    mRotate = 0.13;
-    mMove = 250;
-    mDirection = Ogre::Vector3::ZERO;
+    headNode->attachObject(ogreHead);    
 }
 
 
@@ -198,6 +204,7 @@ void BareOgre::createScene()
 //     mKeyboard->setEventCallback(this);
 //     mMouse->setEventCallback(this);
 // }
+
 
 // void BareOgre::initVideo()
 // {
@@ -255,7 +262,7 @@ void BareOgre::setupResources()
             typeName = i->first;
             archName = i->second;
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-                                                                           archName, typeName, secName);
+                archName, typeName, secName);
         }
     }
 }
@@ -269,9 +276,46 @@ bool BareOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     // Need to capture/update each device.
     processInput();
 
-    mCamNode->translate(mDirection * evt.timeSinceLastFrame,
-                        Ogre::Node::TS_LOCAL);
+    // Build our accelerationeration vector based on keyboard input composite.
+    mAcceleration = Ogre::Vector3::ZERO;
+    if (mMovingForward) mAcceleration += mCamera->getDirection();
+    if (mMovingBack) mAcceleration -= mCamera->getDirection();
+    if (mMovingRight) mAcceleration += mCamera->getRight();
+    if (mMovingLeft) mAcceleration -= mCamera->getRight();
+    if (mMovingUp) mAcceleration += mCamera->getUp();
+    if (mMovingDown) mAcceleration -= mCamera->getUp();
 
+    // If accelerating, try to reach max speed in a certain time.
+    Ogre::Real maxSpeed = mSlowMove ? mSlowMaxSpeed : mMaxSpeed;
+    if (mAcceleration.squaredLength() != 0)
+    {
+        mAcceleration.normalise();
+        mVelocity += mAccelerationRate * mAcceleration * evt.timeSinceLastFrame;
+    }
+    // If not accelerating, try to smax in a certain time.
+    else
+    {
+        mVelocity -= mAccelerationRate * mVelocity * evt.timeSinceLastFrame;
+    }
+
+    Ogre::Real tooSmall = std::numeric_limits<Ogre::Real>::epsilon();
+
+    // Keep camera velocity below max speed and above epsilon.
+    if (mVelocity.squaredLength() > maxSpeed * maxSpeed)
+    {
+        mVelocity.normalise();
+        mVelocity *= maxSpeed;
+    }
+    else if (mVelocity.squaredLength() < tooSmall * tooSmall)
+    {
+        mVelocity = Ogre::Vector3::ZERO;
+    }
+
+    if (mVelocity != Ogre::Vector3::ZERO)
+    {
+        mCamera->move(mVelocity * evt.timeSinceLastFrame);
+    }
+                  
     return true;
 }
 
@@ -323,7 +367,9 @@ void BareOgre::processInput()
             std::cout << "Mouse button down!" << std::endl;
             break;
         case SDL_MOUSEMOTION:
-            mouseMoved();
+            SDL_ShowCursor(SDL_DISABLE);
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+            mouseMoved(event.motion);
             break;
             // default:
             //     std::cout << "Got somethin!" << std::endl;
@@ -332,24 +378,52 @@ void BareOgre::processInput()
 }
 
 
-void BareOgre::mouseMoved()
+void BareOgre::mouseMoved(const SDL_MouseMotionEvent& event)
 {
-    //if (evt.state.buttonDown(OIS::MB_Right)) {
-    int dx, dy;
-    SDL_GetRelativeMouseState(&dx, &dy);
-    mCamNode->yaw(Ogre::Degree(-mRotate * dx),
-                  Ogre::Node::TS_WORLD);
-    mCamNode->pitch(Ogre::Degree(-mRotate * dy),
-                    Ogre::Node::TS_LOCAL);
-    //}
+    mCamera->yaw(Ogre::Degree(-event.xrel * mRotationSpeed));
+    mCamera->pitch(Ogre::Degree(-event.yrel * mRotationSpeed));
 }
 
 
-void BareOgre::keyPressed(SDL_KeyboardEvent event) {
+void BareOgre::keyPressed(const SDL_KeyboardEvent& event) {
     SDL_Keysym key = event.keysym;
 
     switch (key.scancode)
-    {
+    {            
+    case SDL_SCANCODE_UP:
+    case SDL_SCANCODE_W:
+        mMovingForward = true;
+        break;
+
+    case SDL_SCANCODE_DOWN:
+    case SDL_SCANCODE_S:
+        mMovingBack = true;
+        break;
+
+    case SDL_SCANCODE_RIGHT:
+    case SDL_SCANCODE_D:
+        mMovingRight = true;
+        break;
+        
+    case SDL_SCANCODE_LEFT:
+    case SDL_SCANCODE_A:
+        mMovingLeft = true;
+        break;
+
+    case SDL_SCANCODE_PAGEUP:
+    case SDL_SCANCODE_Q:
+        mMovingUp = true;
+        break;
+
+    case SDL_SCANCODE_PAGEDOWN:
+    case SDL_SCANCODE_E:
+        mMovingDown = true;
+        break;
+
+    case SDL_SCANCODE_LSHIFT:
+        mSlowMove = true;
+        break;
+
     case SDL_SCANCODE_ESCAPE:
         mShutdown = true;
         break;
@@ -361,75 +435,46 @@ void BareOgre::keyPressed(SDL_KeyboardEvent event) {
     case SDL_SCANCODE_F5:
         Ogre::TextureManager::getSingleton().reloadAll();
         break;
-
-    case SDL_SCANCODE_UP:
-    case SDL_SCANCODE_W:
-        mDirection.z -= mMove;
-        break;
-
-    case SDL_SCANCODE_DOWN:
-    case SDL_SCANCODE_S:
-        mDirection.z += mMove;
-        break;
-
-    case SDL_SCANCODE_LEFT:
-    case SDL_SCANCODE_A:
-        mDirection.x -= mMove;
-        break;
-
-    case SDL_SCANCODE_RIGHT:
-    case SDL_SCANCODE_D:
-        mDirection.x += mMove;
-        break;
-
-    case SDL_SCANCODE_PAGEDOWN:
-    case SDL_SCANCODE_E:
-        mDirection.y -= mMove;
-        break;
-
-    case SDL_SCANCODE_PAGEUP:
-    case SDL_SCANCODE_Q:
-        mDirection.y += mMove;
-        break;
     }
 }
 
 
-void BareOgre::keyReleased(SDL_KeyboardEvent event) {
+void BareOgre::keyReleased(const SDL_KeyboardEvent& event) {
     SDL_Keysym key = event.keysym;
 
     switch (key.scancode) {
     case SDL_SCANCODE_UP:
     case SDL_SCANCODE_W:
-        mDirection.z += mMove;
+        mMovingForward = false;
         break;
 
     case SDL_SCANCODE_DOWN:
     case SDL_SCANCODE_S:
-        mDirection.z -= mMove;
-        break;
-
-    case SDL_SCANCODE_LEFT:
-    case SDL_SCANCODE_A:
-        mDirection.x += mMove;
+        mMovingBack = false;
         break;
 
     case SDL_SCANCODE_RIGHT:
     case SDL_SCANCODE_D:
-        mDirection.x -= mMove;
+        mMovingRight = false;
         break;
-
-    case SDL_SCANCODE_PAGEDOWN:
-    case SDL_SCANCODE_E:
-        mDirection.y += mMove;
+        
+    case SDL_SCANCODE_LEFT:
+    case SDL_SCANCODE_A:
+        mMovingLeft = false;
         break;
 
     case SDL_SCANCODE_PAGEUP:
     case SDL_SCANCODE_Q:
-        mDirection.y -= mMove;
+        mMovingUp = false;
         break;
 
-    default:
+    case SDL_SCANCODE_PAGEDOWN:
+    case SDL_SCANCODE_E:
+        mMovingDown = false;
+        break;
+
+    case SDL_SCANCODE_LSHIFT:
+        mSlowMove = false;
         break;
     }
 }

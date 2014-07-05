@@ -14,11 +14,6 @@
 
 #include "OgreFrameListener.h"
 
-// #include <OISEvents.h>
-// #include <OISInputManager.h>
-// #include <OISKeyboard.h>
-// #include <OISMouse.h>
-
 #include "SDL.h"
 
 #define SDL_MAIN_HANDLED
@@ -52,7 +47,7 @@ protected:
     // virtual bool mouseReleased(const OIS::MouseEvent &arg,
     //                             OIS::MouseButtonID id);
 
-    // private:
+// private:
     Ogre::String mPluginsCfg;
     Ogre::String mResourcesCfg;
     Ogre::Root* mRoot;
@@ -62,21 +57,29 @@ protected:
     bool mShutdown;
 
     Ogre::Camera* mCamera;
-    Ogre::SceneNode *mCamNode;
-    Ogre::Real mRotate;
-    Ogre::Real mMove;
-    Ogre::Vector3 mDirection;
-
-    // OIS::InputManager* mInputManager;
-    // OIS::Mouse* mMouse;
-    // OIS::Keyboard* mKeyboard;
+    Ogre::SceneNode* mCamNode;
+    Ogre::Real mRotationSpeed;
+    Ogre::Vector3 mVelocity;
+    Ogre::Vector3 mVelocityDirection;
+    Ogre::Real mMaxSpeed;
+    Ogre::Real mSlowMaxSpeed;
+    Ogre::Vector3 mAcceleration;
+    Ogre::Vector3 mAccelerationDirection;
+    Ogre::Real mAccelerationRate;
+    bool mSlowMove;
+    bool mMovingForward;
+    bool mMovingBack;
+    bool mMovingUp;
+    bool mMovingDown;
+    bool mMovingRight;
+    bool mMovingLeft;
 
     // SDL input
     SDL_Window* mSDLWindow;
     virtual void processInput();
-    virtual void mouseMoved();
-    virtual void keyPressed(SDL_KeyboardEvent event);
-    virtual void keyReleased(SDL_KeyboardEvent event);
+    virtual void mouseMoved(const SDL_MouseMotionEvent& event);
+    virtual void keyPressed(const SDL_KeyboardEvent& event);
+    virtual void keyReleased(const SDL_KeyboardEvent& event);
 };
 
 #endif

@@ -214,21 +214,20 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
- 
-	install(TARGETS ${APPLICATION_NAME}
-		RUNTIME DESTINATION bin
-		CONFIGURATIONS All)
- 
-	install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/media
-		DESTINATION ./
-		CONFIGURATIONS Release RelWithDebInfo Debug
-	)
- 
-	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
-		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
-		DESTINATION bin
-		CONFIGURATIONS Release RelWithDebInfo Debug
-	)
- 
+  # ogre_add_library(BareOgre ${OGRE_LIB_TYPE} ${HDRS} ${SRCS})
+  add_library(BareOgre ${OGRE_LIB_TYPE} ${HDRS} ${SRCS})
+
+  install(TARGETS ${APPLICATION_NAME}
+    RUNTIME DESTINATION bin
+    CONFIGURATIONS All)
+  
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/media
+    DESTINATION ./
+    CONFIGURATIONS Release RelWithDebInfo Debug)
+  
+  install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
+    ${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
+    DESTINATION bin
+    CONFIGURATIONS Release RelWithDebInfo Debug)
 endif (UNIX)
  

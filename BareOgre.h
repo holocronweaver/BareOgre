@@ -77,9 +77,12 @@ protected:
     // SDL input
     SDL_Window* mSDLWindow;
     virtual void processInput();
-    virtual void mouseMoved(const SDL_MouseMotionEvent& event);
     virtual void keyPressed(const SDL_KeyboardEvent& event);
     virtual void keyReleased(const SDL_KeyboardEvent& event);
+    virtual void mouseMoved(const SDL_MouseMotionEvent& event);
+    virtual void mousePressed(const SDL_MouseButtonEvent& event);
+    virtual void mouseReleased(const SDL_MouseButtonEvent& event);
+    virtual void mouseWheelRotated(const SDL_MouseWheelEvent& event);
 };
 
 #endif

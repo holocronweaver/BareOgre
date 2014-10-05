@@ -132,6 +132,8 @@ bool BareOgre::go()
     mLog->logMessage("*** Begin Rendering ***");
     mRoot->addFrameListener(this);
     mRoot->startRendering();
+
+    return true;
 }
 
 
@@ -351,7 +353,6 @@ void BareOgre::processInput()
         switch (event.type)
         {
         case SDL_QUIT:
-            std::cout << "Quit!" << std::endl;
             mShutdown = true;
             break;
         case SDL_KEYDOWN:
@@ -365,11 +366,18 @@ void BareOgre::processInput()
             break;
         case SDL_MOUSEBUTTONDOWN:
             std::cout << "Mouse button down!" << std::endl;
+            mousePressed(event.button);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            mouseReleased(event.button);
             break;
         case SDL_MOUSEMOTION:
             SDL_ShowCursor(SDL_DISABLE);
             SDL_SetRelativeMouseMode(SDL_TRUE);
             mouseMoved(event.motion);
+            break;
+        case SDL_MOUSEWHEEL:
+            mouseWheelRotated(event.wheel);
             break;
             // default:
             //     std::cout << "Got somethin!" << std::endl;
@@ -378,11 +386,7 @@ void BareOgre::processInput()
 }
 
 
-void BareOgre::mouseMoved(const SDL_MouseMotionEvent& event)
-{
-    mCamera->yaw(Ogre::Degree(-event.xrel * mRotationSpeed));
-    mCamera->pitch(Ogre::Degree(-event.yrel * mRotationSpeed));
-}
+
 
 
 void BareOgre::keyPressed(const SDL_KeyboardEvent& event) {
@@ -477,4 +481,29 @@ void BareOgre::keyReleased(const SDL_KeyboardEvent& event) {
         mSlowMove = false;
         break;
     }
+}
+
+
+void BareOgre::mouseMoved(const SDL_MouseMotionEvent& event)
+{
+    mCamera->yaw(Ogre::Degree(-event.xrel * mRotationSpeed));
+    mCamera->pitch(Ogre::Degree(-event.yrel * mRotationSpeed));
+}
+
+
+void BareOgre::mousePressed(const SDL_MouseButtonEvent& event)
+{
+    // Nothing to do (for now).
+}
+
+
+void BareOgre::mouseReleased(const SDL_MouseButtonEvent& event)
+{
+    // Nothing to do (for now).
+}
+
+
+void BareOgre::mouseWheelRotated(const SDL_MouseWheelEvent& event)
+{
+    // Nothing to do (for now).
 }

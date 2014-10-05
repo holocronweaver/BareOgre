@@ -70,10 +70,8 @@ endif ()
 #   message(SEND_ERROR "Failed to find CEGUI.")
 # endif ()
 
-# find_package(CEGUIOGRE REQUIRED)
-
-# if (NOT CEGUIOGRE_FOUND)
-#   message(SEND_ERROR "Failed to find CEGUIOGRE.")
+# if (NOT CEGUI_OgreRenderer_FOUND)
+#   message(SEND_ERROR "Failed to find CEGUI_OgreRenderer.")
 # endif ()
 
 
@@ -134,7 +132,7 @@ include_directories(
   # ${OIS_INCLUDE_DIRS}
   ${SDL2_INCLUDE_DIRS}
   #${CEGUI_INCLUDE_DIRS}
-  #${CEGUIOGRE_INCLUDE_DIRS}
+  #${CEGUI_OgreRenderer_INCLUDE_DIRS}
 )
 
 add_executable(${APPLICATION_NAME} WIN32 ${HDRS} ${SRCS})
@@ -148,7 +146,7 @@ target_link_libraries(
   # ${OIS_LIBRARIES}
   ${SDL2_LIBRARIES}
   #${CEGUI_LIBRARIES}
-  #${CEGUIOGRE_LIBRARIES}
+  #${CEGUI_OgreRenderer_LIBRARIES}
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)

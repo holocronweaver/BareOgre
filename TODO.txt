@@ -1,5 +1,0 @@
-List of things that need to be done to complete BareOgre:
-
-* tweak for C++14
-* check that it runs on Windows 7 and Mac OS X
-* do one last code cleanup

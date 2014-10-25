@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "BareOgre.h"
 
 #include "OgreCamera.h"

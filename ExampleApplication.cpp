@@ -1,5 +1,7 @@
 #include "ExampleApplication.h"
 
+#include <iostream>
+
 #include <OgreCamera.h>
 #include <OgreOptionsFile.h>
 #include <OgreEntity.h>
@@ -33,7 +35,7 @@ void ExampleApplication::createScene()
   mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
   mCamNode->attachObject(mCamera);
 
-  // Set control control parameters.
+  // Set control parameters.
   mRotationSpeed = 0.13;
   mMaxSpeed = 1000;
   mSlowMaxSpeed = mMaxSpeed / 15;

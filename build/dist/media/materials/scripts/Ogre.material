@@ -3,7 +3,7 @@
 
 material Ogre/Earring
 {
-    technique 
+    technique
     {
         pass
         {

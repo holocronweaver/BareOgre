@@ -288,6 +288,11 @@ bool BareOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if (mMovingLeft) mAcceleration -= mCamera->getRight();
     if (mMovingUp) mAcceleration += mCamera->getUp();
     if (mMovingDown) mAcceleration -= mCamera->getUp();
+    if (!(mMovingForward && mMovingBack && mMovingRight && mMovingLeft &&
+        mMovingUp && mMovingDown))
+    {
+        mAcceleration = mAcceleration / 10;
+    }
 
     // If accelerating, try to reach max speed in a certain time.
     Ogre::Real maxSpeed = mSlowMove ? mSlowMaxSpeed : mMaxSpeed;

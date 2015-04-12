@@ -280,48 +280,41 @@ bool BareOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     // Need to capture/update each device.
     processInput();
 
-    // Build our accelerationeration vector based on keyboard input composite.
+    // Build our acceleration vector based on keyboard input composite.
     mAcceleration = Ogre::Vector3::ZERO;
     if (mMovingForward) mAcceleration += mCamera->getDirection();
     if (mMovingBack) mAcceleration -= mCamera->getDirection();
     if (mMovingRight) mAcceleration += mCamera->getRight();
     if (mMovingLeft) mAcceleration -= mCamera->getRight();
     if (mMovingUp) mAcceleration += mCamera->getUp();
-    if (mMovingDown) mAcceleration -= mCamera->getUp();
-    if (!(mMovingForward && mMovingBack && mMovingRight && mMovingLeft &&
-        mMovingUp && mMovingDown))
-    {
-        mAcceleration = mAcceleration / 10;
-    }
+    if (mMovingDown) mAcceleration -= mCamera->getUp();    
 
     // If accelerating, try to reach max speed in a certain time.
-    Ogre::Real maxSpeed = mSlowMove ? mSlowMaxSpeed : mMaxSpeed;
-    if (mAcceleration.squaredLength() != 0)
+    if (mAcceleration != Ogre::Vector3::ZERO)
     {
         mAcceleration.normalise();
         mVelocity += mAccelerationRate * mAcceleration * evt.timeSinceLastFrame;
     }
-    // If not accelerating, try to smax in a certain time.
+    // If not accelerating, but still moving, come to a gradual stop.
+    else if (mVelocity.squaredLength() > 1E-10)
+    {
+        mVelocity /= mAccelerationRate * evt.timeSinceLastFrame;
+    }
+    // If moving extremely slowly, stop.
     else
-    {
-        mVelocity -= mAccelerationRate * mVelocity * evt.timeSinceLastFrame;
-    }
-
-    Ogre::Real tooSmall = std::numeric_limits<Ogre::Real>::epsilon();
-
-    // Keep camera velocity below max speed and above epsilon.
-    if (mVelocity.squaredLength() > maxSpeed * maxSpeed)
-    {
-        mVelocity.normalise();
-        mVelocity *= maxSpeed;
-    }
-    else if (mVelocity.squaredLength() < tooSmall * tooSmall)
     {
         mVelocity = Ogre::Vector3::ZERO;
     }
 
     if (mVelocity != Ogre::Vector3::ZERO)
     {
+        // Keep camera velocity below max speed and above epsilon.
+        Ogre::Real maxSpeed = mSlowMove ? mSlowMaxSpeed : mMaxSpeed;
+        if (mVelocity.squaredLength() > maxSpeed * maxSpeed)
+        {
+            mVelocity.normalise();
+            mVelocity *= maxSpeed;
+        }
         mCamera->move(mVelocity * evt.timeSinceLastFrame);
     }
                   

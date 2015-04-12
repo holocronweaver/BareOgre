@@ -1,16 +1,18 @@
 //TODO:
 // * add specularity for earring
 
+// import * from "SimpleLighting.material"
+
 material Ogre/Earring
 {
-    technique
+    technique 
     {
         pass
         {
             ambient 0.7 0.7 0
             diffuse 0.7 0.7 0
 
-            vertex_program_ref SimpleLighting/PassThroughVP
+            vertex_program_ref SimpleLighting/PassThrough_PNU_VP
             {
             }
 
@@ -31,71 +33,71 @@ material Ogre/Earring
 
 material Ogre/Skin
 {
- technique 
- {
-  pass
-  {
-   ambient 0.3 0.8 0.3
+    technique 
+    {
+        pass
+        {
+            ambient 0.3 0.8 0.3
 
-                     vertex_program_ref SimpleLighting/PassThroughVP
-                     {
-                     }
+            vertex_program_ref SimpleLighting/PassThrough_PNU_VP
+            {
+            }
 
-                     fragment_program_ref SimpleLighting/PointLightDiffuseFP
-                     {
-                     }
+            fragment_program_ref SimpleLighting/PointLightDiffuseFP
+            {
+            } 
 
-   texture_unit
-   {
-    texture GreenSkin.jpg
-    tex_address_mode mirror
-   }
-  }
- }
+            texture_unit
+            {
+                texture GreenSkin.jpg
+                tex_address_mode mirror
+            }
+        }
+    }
 }
 
 material Ogre/Tusks
 {
- technique 
- {
-  pass
-  {
-   ambient 0.7 0.7 0.6
+    technique 
+    {
+        pass
+        {
+            ambient 0.7 0.7 0.6
 
-                        vertex_program_ref SimpleLighting/PassThroughVP
-                        {
-                        }
+            vertex_program_ref SimpleLighting/PassThrough_PNU_VP
+            {
+            }
 
-                        fragment_program_ref SimpleLighting/PointLightDiffuseFP
-                        {
-                        }
+            fragment_program_ref SimpleLighting/PointLightDiffuseFP
+            {
+            }
 
-   texture_unit
-   {
-    texture tusk.jpg
-    scale 0.2 0.2
+            texture_unit
+            {
+                texture tusk.jpg
+                scale 0.2 0.2
+            }
+        }
    }
-  }
- }
 }
 
 material Ogre/Eyes
 {
- technique
- {
-  pass
-  {
-   ambient 1 0.4 0.4
-   diffuse 1 0.7 0
-   emissive 0.3 0.1 0
+    technique
+    {
+        pass
+        {
+            ambient 1 0.4 0.4
+            diffuse 1 0.7 0
+            emissive 0.3 0.1 0
 
-                        vertex_program_ref SimpleLighting/PassThroughVP
-                        {
-                        }
+            vertex_program_ref SimpleLighting/PassThrough_PNU_VP
+            {
+            }
 
-                        fragment_program_ref SimpleLighting/PointLightDiffuseNoTextureFP
-                        {
-                        }
-  }
- }
+            fragment_program_ref SimpleLighting/PointLightDiffuseNoTextureFP
+            {
+            }
+        }
+    }
 }

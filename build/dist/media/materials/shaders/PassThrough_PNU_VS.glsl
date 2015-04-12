@@ -14,6 +14,6 @@ void main()
 {
     gl_Position = worldViewProj * vertex;
     passPos = vertex;
-    passUV = uv0;
     passNormal = normal;
+    passUV = uv0;
 }

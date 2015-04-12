@@ -6,9 +6,21 @@ vertex_program SimpleLighting/Common/GLSL glsl
     syntax glsl150
 }
 
-vertex_program SimpleLighting/PassThroughVP/GLSL glsl
+vertex_program SimpleLighting/PassThrough_P_VP/GLSL glsl
 {
-    source PassThroughVS.glsl
+    source PassThrough_P_VS.glsl
+    syntax glsl150
+}
+
+vertex_program SimpleLighting/PassThrough_PN_VP/GLSL glsl
+{
+    source PassThrough_PN_VS.glsl
+    syntax glsl150
+}
+
+vertex_program SimpleLighting/PassThrough_PNU_VP/GLSL glsl
+{
+    source PassThrough_PNU_VS.glsl
     syntax glsl150
 }
 
@@ -31,6 +43,17 @@ fragment_program SimpleLighting/WhiteFP glsl
    syntax glsl150
 }
 
+fragment_program SimpleLighting/UniformColourFP glsl
+{
+   source UniformColourFS.glsl
+   syntax glsl150
+
+   default_params
+   {
+       param_named colour float4 1 1 1 1
+   }
+}
+
 fragment_program SimpleLighting/EnvMapSphereFP/GLSL glsl
 {
     source EnvMapSphereFS.glsl
@@ -49,10 +72,32 @@ vertex_program SimpleLighting/Common unified
     // }
 }
 
-vertex_program SimpleLighting/PassThroughVP unified
+vertex_program SimpleLighting/PassThrough_P_VP unified
 {
-    delegate SimpleLighting/PassThroughVP/GLSL
-    // delegate SimpleLighting/PassThroughVP/HLSL
+    delegate SimpleLighting/PassThrough_P_VP/GLSL
+    // delegate SimpleLighting/PassThrough_P_VP/HLSL
+
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+    }
+}
+
+vertex_program SimpleLighting/PassThrough_PN_VP unified
+{
+    delegate SimpleLighting/PassThrough_PN_VP/GLSL
+    // delegate SimpleLighting/PassThrough_PN_VP/HLSL
+
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+    }
+}
+
+vertex_program SimpleLighting/PassThrough_PNU_VP unified
+{
+    delegate SimpleLighting/PassThrough_PNU_VP/GLSL
+    // delegate SimpleLighting/PassThrough_PNU_VP/HLSL
 
     default_params
     {
@@ -104,5 +149,97 @@ fragment_program SimpleLighting/EnvMapSphereFP unified
         param_named_auto sceneColour derived_scene_colour
         param_named_auto diffuseColour derived_light_diffuse_colour 0
         param_named_auto surfaceToLightVector light_position_object_space 0
+    }
+}
+
+material SimpleLighting/White
+{
+    technique
+    {
+        pass
+        {
+           vertex_program_ref SimpleLighting/PassThrough_P_VP
+           {
+           }
+
+           fragment_program_ref SimpleLighting/WhiteFP
+           {
+           }
+        }
+    }
+}
+
+material SimpleLighting/UniformColour
+{
+    technique
+    {
+        pass
+        {
+           vertex_program_ref SimpleLighting/PassThrough_P_VP
+           {
+           }
+
+           fragment_program_ref SimpleLighting/UniformColourFP
+           {
+           }
+        }
+    }
+}
+
+material SimpleLighting/UniformYellow : SimpleLighting/UniformColour
+{
+    technique
+    {
+        pass
+        {
+           fragment_program_ref SimpleLighting/UniformColourFP
+           {
+               param_named colour float4 1 1 0 1
+           }
+        }
+    }
+}
+
+material SimpleLighting/UniformRed : SimpleLighting/UniformColour
+{
+    technique
+    {
+        pass
+        {
+           fragment_program_ref SimpleLighting/UniformColourFP
+           {
+               param_named colour float4 1 0 0 1
+           }
+        }
+    }
+}
+
+material SimpleLighting/UniformBlue : SimpleLighting/UniformColour
+{
+    technique
+    {
+        pass
+        {
+           fragment_program_ref SimpleLighting/UniformColourFP
+           {
+               param_named colour float4 0 0 1 1
+           }
+        }
+    }
+}
+
+material SimpleLighting/UniformBlueWireframe : SimpleLighting/UniformColour
+{
+    technique
+    {
+        pass
+        {
+           polygon_mode wireframe
+
+           fragment_program_ref SimpleLighting/UniformColourFP
+           {
+               param_named colour float4 0 0 1 1
+           }
+        }
     }
 }

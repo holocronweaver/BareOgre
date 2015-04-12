@@ -164,7 +164,7 @@ void BareOgre::createScene()
     mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
 
     Ogre::Light* l = mSceneMgr->createLight("MainLight");
-    l->setPosition(20, 80, 50);
+    l->setPosition((Ogre::Real)20.0, (Ogre::Real)80.0, (Ogre::Real)50.0);
 
     // Add meshes.
     Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");

@@ -117,7 +117,8 @@ fragment_program SimpleLighting/PointLightDiffuseFP unified
         param_named_auto worldViewIT inverse_transpose_worldview_matrix    
         param_named_auto sceneColour derived_scene_colour
         param_named_auto diffuseColour derived_light_diffuse_colour 0
-        param_named_auto lightPosV light_position_object_space 0
+        // param_named_auto lightPosV light_position_object_space 0
+        param_named_auto lightPosV light_position 0
         param_named_auto lightAttenuationCoeff light_attenuation 0
     }
 }

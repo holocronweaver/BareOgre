@@ -143,13 +143,14 @@ void BareOgre::createScene()
 {
     // Create SceneManager.
     mSceneMgr = mRoot->createSceneManager("DefaultSceneManager");
+    Ogre::SceneNode rootNode = SceneMgr->getRootSceneNode();
 
     // Create a camera.
     mCamera = mSceneMgr->createCamera("PlayerCam");
     mCamera->setPosition(Ogre::Vector3(0, 0, 80));
     mCamera->lookAt(Ogre::Vector3(0, 0, -3));
     mCamera->setNearClipDistance(5);
-    mCamNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode");
+    mCamNode = rootNode->createChildSceneNode("CamNode");
     mCamNode->attachObject(mCamera);
 
     // Create one viewport, entire window.
@@ -168,8 +169,7 @@ void BareOgre::createScene()
 
     // Add meshes.
     Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-    Ogre::SceneNode* headNode =
-        mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    Ogre::SceneNode* headNode = rootNode->createChildSceneNode();
     headNode->attachObject(ogreHead);    
 }
 
